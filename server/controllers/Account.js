@@ -1,13 +1,10 @@
 const models = require('../models');
-const Account = models.Account;
 
-const loginPage = (req, res) => {
-  return res.render('login');
-};
+const { Account } = models;
 
-const signupPage = (req, res) => {
-  return res.render('signup');
-};
+const loginPage = (req, res) => res.render('login');
+
+const signupPage = (req, res) => res.render('signup');
 
 const logout = (req, res) => {
   req.session.destroy();
@@ -18,12 +15,12 @@ const login = (req, res) => {
   const username = `${req.body.username}`;
   const pass = `${req.body.pass}`;
 
-  if(!username || !pass) {
+  if (!username || !pass) {
     return res.status(400).json({ error: 'All fields are required!' });
   }
 
   return Account.authenticate(username, pass, (err, account) => {
-    if(err || !account) {
+    if (err || !account) {
       return res.status(401).json({ error: 'Wrong username or password!' });
     }
 
@@ -48,14 +45,14 @@ const signup = async (req, res) => {
 
   try {
     const hash = await Account.generateHash(pass);
-    const newAccount = new Account({username, password: hash});
+    const newAccount = new Account({ username, password: hash });
     await newAccount.save();
     req.session.account = Account.toAPI(newAccount);
     return res.json({ redirect: '/maker' });
   } catch (err) {
     console.log(err);
-    if(err.code === 11000) {
-      return res.status(400).json({ error:'Username already in use!' });
+    if (err.code === 11000) {
+      return res.status(400).json({ error: 'Username already in use!' });
     }
     return res.status(500).json({ error: 'An error occured!' });
   }
